@@ -10,9 +10,9 @@ namespace API.Middleware
         private readonly IHostEnvironment _env;
         public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger, IHostEnvironment env)
         {
+            _next = next;
             _logger = logger;
             _env = env;
-            _next = next;
         }
         public async Task InvokeAsync(HttpContext context)
         {
