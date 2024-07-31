@@ -1,0 +1,25 @@
+# fly.toml app configuration file generated for api-holy-firefly-2070 on 2024-07-30T06:14:02-07:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'api-holy-firefly-2070'
+primary_region = 'sjc'
+
+[env]
+ASPNETCORE_URLS="http://+:8080"
+StripeSettings__PublishableKey="pk_test_51PhGbLGXYh6tso1r7UUPznF1Hw9jcGro0ZEyCc7DL35N9UtwD2dGLHC98ZXDjLqfrzhNyH8gOm29ps58T2Ysi65Q00ZPbRONOM"
+
+[build]
+  image = 'ddupree2001/restore:latest'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  size = 'shared-cpu-1x'
