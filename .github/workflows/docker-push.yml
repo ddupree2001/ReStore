@@ -2,8 +2,10 @@ name: docker-push
 
 on:
   workflow_dispatch:
-  # push:
+  push:
 
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 jobs:
   docker:
     runs-on: ubuntu-latest
@@ -24,3 +26,11 @@ jobs:
           context: "{{defaultContext}}:API"
           push: true
           tags: ddupree2001/restore:latest
+  deploy:
+    needs: docker
+    name: Deploy app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - run: flyctl deploy --remote-only
