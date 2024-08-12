@@ -9,6 +9,8 @@ primary_region = 'sjc'
 [env]
 ASPNETCORE_URLS="http://+:8080"
 StripeSettings__PublishableKey="pk_test_51PhGbLGXYh6tso1r7UUPznF1Hw9jcGro0ZEyCc7DL35N9UtwD2dGLHC98ZXDjLqfrzhNyH8gOm29ps58T2Ysi65Q00ZPbRONOM"
+Cloudinary__CloudName="dmvdfholt"
+Cloudinary__ApiKey="635579141838477"
 
 [build]
   image = 'ddupree2001/restore:latest'

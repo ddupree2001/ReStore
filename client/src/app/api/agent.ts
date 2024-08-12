@@ -6,23 +6,26 @@ import { store } from "../store/configureStore";
 
 const sleep = () => new Promise((resolve) => setTimeout(resolve, 500));
 
-axios.defaults.baseURL = import.meta.env.VITE_API_URL
+axios.defaults.baseURL = import.meta.env.VITE_API_URL;
 axios.defaults.withCredentials = true;
 
 const responseBody = (response: AxiosResponse) => response.data;
 
-axios.interceptors.request.use(config => {
+axios.interceptors.request.use((config) => {
   const token = store.getState().account.user?.token;
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
-})
+});
 
 axios.interceptors.response.use(
   async (response) => {
-    if(import.meta.env.DEV) await sleep();
+    if (import.meta.env.DEV) await sleep();
     const pagination = response.headers["pagination"];
     if (pagination) {
-      response.data = new PaginatedResponse(response.data, JSON.parse(pagination));
+      response.data = new PaginatedResponse(
+        response.data,
+        JSON.parse(pagination)
+      );
       return response;
     }
     return response;
@@ -45,6 +48,9 @@ axios.interceptors.response.use(
       case 401:
         toast.error(data.title);
         break;
+      case 403:
+        toast.error("You are not allowed to do that!");
+        break;
       case 404:
         toast.error(data.title);
         break;
@@ -59,10 +65,35 @@ axios.interceptors.response.use(
 );
 
 const requests = {
-  get: (url: string, params?: URLSearchParams) => axios.get(url, {params}).then(responseBody),
+  get: (url: string, params?: URLSearchParams) =>
+    axios.get(url, { params }).then(responseBody),
   post: (url: string, body: object) => axios.post(url, body).then(responseBody),
   put: (url: string, body: object) => axios.put(url, body).then(responseBody),
   del: (url: string) => axios.delete(url).then(responseBody),
+  postForm: (url: string, data: FormData) =>
+    axios.post(url, data, {
+      headers: { "Content-type": "multipart/form-data" },
+    }).then(responseBody),
+  putForm: (url: string, data: FormData) =>
+    axios.put(url, data, {
+      headers: { "Content-type": "multipart/form-data" },
+    }).then(responseBody),
+};
+
+function createFormData(item: any) {
+  const formData = new FormData();
+  for (const key in item) {
+    formData.append(key, item[key]);
+  }
+  return formData;
+}
+
+const Admin = {
+  createProduct: (product: any) =>
+    requests.postForm("products", createFormData(product)),
+  updateProduct: (product: any) =>
+    requests.putForm("products", createFormData(product)),
+  deleteProduct: (id: number) => requests.del(`products/${id}`),
 };
 
 const Catalog = {
@@ -81,8 +112,10 @@ const TestErrors = {
 
 const Basket = {
   get: () => requests.get("/basket"),
-  addItem: (productId: number, quantity = 1) => requests.post(`/basket?productId=${productId}&quantity=${quantity}`, {}),
-  removeItem: (productId: number, quantity = 1) => requests.del(`/basket?productId=${productId}&quantity=${quantity}`)
+  addItem: (productId: number, quantity = 1) =>
+    requests.post(`/basket?productId=${productId}&quantity=${quantity}`, {}),
+  removeItem: (productId: number, quantity = 1) =>
+    requests.del(`/basket?productId=${productId}&quantity=${quantity}`),
 };
 
 const Account = {
@@ -90,7 +123,7 @@ const Account = {
   register: (values: any) => requests.post("/account/register", values),
   currentUser: () => requests.get("/account/currentUser"),
   fetchAddress: () => requests.get("/account/savedAddress"),
-}
+};
 
 const Orders = {
   list: () => requests.get("/orders"),
@@ -99,8 +132,8 @@ const Orders = {
 };
 
 const Payments = {
-  createPaymentIntent: () => requests.post('/payments', {})
-}
+  createPaymentIntent: () => requests.post("/payments", {}),
+};
 
 const agent = {
   Catalog,
@@ -108,7 +141,8 @@ const agent = {
   Basket,
   Account,
   Orders,
-  Payments
+  Payments,
+  Admin,
 };
 
 export default agent;
